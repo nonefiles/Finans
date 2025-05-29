@@ -2,18 +2,16 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  output: 'standalone',
+  output: 'export',
+  distDir: 'out',
+  images: {
+    unoptimized: true,
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: true,
-  },
-  images: {
-    unoptimized: true,
-  },
-  experimental: {
-    serverComponentsExternalPackages: ['@supabase/supabase-js'],
   },
 };
 
