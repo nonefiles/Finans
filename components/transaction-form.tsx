@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Edit } from "lucide-react"
 import { createTransaction, updateTransaction } from "@/actions/transactions"
-import { useAuth } from "@/lib/auth"
 import { t } from "@/lib/translations"
 import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
@@ -26,13 +24,12 @@ export function TransactionForm({ editingTransaction, onEditComplete }: Transact
   const [amount, setAmount] = useState(editingTransaction?.amount?.toString() || "")
   const [description, setDescription] = useState(editingTransaction?.description || "")
   const [isPending, startTransition] = useTransition()
-  const { user } = useAuth()
   const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!user || !type || !amount || !description) {
+    if (!type || !amount || !description) {
       toast({
         title: t("error"),
         description: t("fieldRequired"),
@@ -48,8 +45,6 @@ export function TransactionForm({ editingTransaction, onEditComplete }: Transact
 
     if (editingTransaction) {
       formData.append("id", editingTransaction.id)
-    } else {
-      formData.append("userId", user.id)
     }
 
     startTransition(async () => {

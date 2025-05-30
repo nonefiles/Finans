@@ -3,14 +3,10 @@
 import { createServerClient } from "@/lib/supabase"
 import { revalidatePath } from "next/cache"
 
-export async function getTransactions(userId: string) {
+export async function getTransactions() {
   const supabase = createServerClient()
 
-  const { data, error } = await supabase
-    .from("transactions")
-    .select("*")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
+  const { data, error } = await supabase.from("transactions").select("*").order("created_at", { ascending: false })
 
   if (error) {
     throw new Error(error.message)
@@ -25,14 +21,13 @@ export async function createTransaction(formData: FormData) {
   const type = formData.get("type") as string
   const amount = Number.parseFloat(formData.get("amount") as string)
   const description = formData.get("description") as string
-  const userId = formData.get("userId") as string
 
-  if (!type || !amount || !description || !userId) {
+  if (!type || !amount || !description) {
     throw new Error("Tüm alanlar zorunludur")
   }
 
   const { error } = await supabase.from("transactions").insert({
-    user_id: userId,
+    user_id: "public-user", // Sabit kullanıcı ID'si
     type,
     amount,
     description,
