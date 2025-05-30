@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+
 import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,8 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Edit, AlertCircle } from "lucide-react"
+import { Plus, Edit } from "lucide-react"
 import { createTransaction, updateTransaction } from "@/actions/transactions"
+import { useAuth } from "@/lib/auth"
 import { t } from "@/lib/translations"
 import type { Transaction } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
@@ -23,54 +25,31 @@ export function TransactionForm({ editingTransaction, onEditComplete }: Transact
   const [type, setType] = useState(editingTransaction?.type || "")
   const [amount, setAmount] = useState(editingTransaction?.amount?.toString() || "")
   const [description, setDescription] = useState(editingTransaction?.description || "")
-  const [errors, setErrors] = useState<Record<string, string>>({})
   const [isPending, startTransition] = useTransition()
+  const { user } = useAuth()
   const { toast } = useToast()
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!type) {
-      newErrors.type = "İşlem türü seçilmelidir"
-    }
-
-    if (!amount) {
-      newErrors.amount = "Tutar girilmelidir"
-    } else {
-      const numAmount = Number.parseFloat(amount)
-      if (isNaN(numAmount) || numAmount <= 0) {
-        newErrors.amount = "Geçerli bir tutar girin (0'dan büyük)"
-      } else if (numAmount > 999999999.99) {
-        newErrors.amount = "Tutar çok büyük (maks. 999,999,999.99)"
-      }
-    }
-
-    if (!description.trim()) {
-      newErrors.description = "Açıklama girilmelidir"
-    } else if (description.trim().length < 2) {
-      newErrors.description = "Açıklama en az 2 karakter olmalıdır"
-    } else if (description.length > 500) {
-      newErrors.description = "Açıklama çok uzun (maks. 500 karakter)"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateForm()) {
+    if (!user || !type || !amount || !description) {
+      toast({
+        title: t("error"),
+        description: t("fieldRequired"),
+        variant: "destructive",
+      })
       return
     }
 
     const formData = new FormData()
     formData.append("type", type)
     formData.append("amount", amount)
-    formData.append("description", description.trim())
+    formData.append("description", description)
 
     if (editingTransaction) {
       formData.append("id", editingTransaction.id)
+    } else {
+      formData.append("userId", user.id)
     }
 
     startTransition(async () => {
@@ -88,11 +67,13 @@ export function TransactionForm({ editingTransaction, onEditComplete }: Transact
             title: t("success"),
             description: t("transactionAdded"),
           })
-          // Reset form
+        }
+
+        // Reset form if not editing
+        if (!editingTransaction) {
           setType("")
           setAmount("")
           setDescription("")
-          setErrors({})
         }
       } catch (error) {
         toast({
@@ -102,17 +83,6 @@ export function TransactionForm({ editingTransaction, onEditComplete }: Transact
         })
       }
     })
-  }
-
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    // Sadece sayı ve nokta karakterlerine izin ver
-    if (value === "" || /^\d*\.?\d*$/.test(value)) {
-      setAmount(value)
-      if (errors.amount) {
-        setErrors({ ...errors, amount: "" })
-      }
-    }
   }
 
   return (
@@ -129,15 +99,9 @@ export function TransactionForm({ editingTransaction, onEditComplete }: Transact
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="type">{t("transactionType")} *</Label>
-            <Select
-              value={type}
-              onValueChange={(value) => {
-                setType(value)
-                if (errors.type) setErrors({ ...errors, type: "" })
-              }}
-            >
-              <SelectTrigger className={errors.type ? "border-red-500" : ""}>
+            <Label htmlFor="type">{t("transactionType")}</Label>
+            <Select value={type} onValueChange={setType}>
+              <SelectTrigger>
                 <SelectValue placeholder={t("selectType")} />
               </SelectTrigger>
               <SelectContent>
@@ -145,55 +109,29 @@ export function TransactionForm({ editingTransaction, onEditComplete }: Transact
                 <SelectItem value="expense">{t("expense")}</SelectItem>
               </SelectContent>
             </Select>
-            {errors.type && (
-              <div className="flex items-center gap-1 text-sm text-red-600">
-                <AlertCircle className="h-4 w-4" />
-                {errors.type}
-              </div>
-            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">{t("amount")} * (₺)</Label>
+            <Label htmlFor="amount">{t("amount")}</Label>
             <Input
               id="amount"
-              type="text"
+              type="number"
+              step="0.01"
               placeholder={t("enterAmount")}
               value={amount}
-              onChange={handleAmountChange}
-              className={errors.amount ? "border-red-500" : ""}
+              onChange={(e) => setAmount(e.target.value)}
             />
-            {errors.amount && (
-              <div className="flex items-center gap-1 text-sm text-red-600">
-                <AlertCircle className="h-4 w-4" />
-                {errors.amount}
-              </div>
-            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">{t("description")} *</Label>
+            <Label htmlFor="description">{t("description")}</Label>
             <Textarea
               id="description"
               placeholder={t("enterDescription")}
               value={description}
-              onChange={(e) => {
-                setDescription(e.target.value)
-                if (errors.description) setErrors({ ...errors, description: "" })
-              }}
+              onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className={errors.description ? "border-red-500" : ""}
-              maxLength={500}
             />
-            <div className="flex justify-between items-center">
-              {errors.description && (
-                <div className="flex items-center gap-1 text-sm text-red-600">
-                  <AlertCircle className="h-4 w-4" />
-                  {errors.description}
-                </div>
-              )}
-              <div className="text-xs text-gray-500 ml-auto">{description.length}/500</div>
-            </div>
           </div>
 
           <div className="flex gap-2">

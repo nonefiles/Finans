@@ -37,7 +37,6 @@ export const translations = {
     transactionAdded: "İşlem başarıyla eklendi",
     transactionUpdated: "İşlem başarıyla güncellendi",
     transactionDeleted: "İşlem başarıyla silindi",
-    transactionCount: "işlem kaydedildi",
 
     // Summary
     totalIncome: "Toplam Gelir",
@@ -45,7 +44,7 @@ export const translations = {
     netBalance: "Net Bakiye",
 
     // Form placeholders
-    enterAmount: "Tutarı girin (örn: 100.50)",
+    enterAmount: "Tutarı girin",
     enterDescription: "İşlem açıklamasını girin",
     selectType: "Tür seçin",
 
@@ -54,8 +53,7 @@ export const translations = {
     invalidEmail: "Geçerli bir e-posta adresi girin",
     passwordTooShort: "Şifre en az 6 karakter olmalıdır",
     passwordsNotMatch: "Şifreler eşleşmiyor",
-    invalidAmount: "Geçerli bir tutar girin (0'dan büyük olmalıdır)",
-    amountTooLarge: "Tutar çok büyük (maksimum 999,999,999.99)",
+    invalidAmount: "Geçerli bir tutar girin",
 
     // Date formatting
     today: "Bugün",
@@ -67,16 +65,6 @@ export const translations = {
     // Actions
     confirmDelete: "Bu işlemi silmek istediğinizden emin misiniz?",
     deleteConfirmation: "Bu işlem geri alınamaz.",
-
-    // Status messages
-    syncInfo: "Veriler tüm cihazlarda senkronize edilir",
-    autoRefresh: "Sayfa otomatik olarak güncelleniyor",
-    connectionError: "Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.",
-    dataLoadError: "Veriler yüklenirken hata oluştu",
-
-    // Empty states
-    noDataAvailable: "Henüz veri bulunmuyor",
-    startAddingTransactions: "İşlem eklemeye başlayın",
   },
 }
 

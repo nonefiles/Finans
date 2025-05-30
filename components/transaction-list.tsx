@@ -60,49 +60,30 @@ export function TransactionList({ transactions, onEdit }: TransactionListProps) 
     } else if (date.toDateString() === yesterday.toDateString()) {
       return t("yesterday")
     } else {
-      return date.toLocaleDateString("tr-TR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
+      return date.toLocaleDateString("tr-TR")
     }
-  }
-
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat("tr-TR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount)
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>{t("recentTransactions")}</span>
-          {transactions.length > 0 && (
-            <Badge variant="secondary" className="ml-2">
-              {transactions.length} {t("transactionCount")}
-            </Badge>
-          )}
-        </CardTitle>
+        <CardTitle>{t("recentTransactions")}</CardTitle>
         <CardDescription>
-          {transactions.length === 0 ? t("noTransactions") : `Son ${transactions.length} işlem gösteriliyor`}
+          {transactions.length === 0 ? t("noTransactions") : `${transactions.length} işlem kaydedildi`}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {transactions.length === 0 ? (
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            <DollarSign className="h-16 w-16 mx-auto mb-4 opacity-30" />
-            <h3 className="text-lg font-medium mb-2">{t("noDataAvailable")}</h3>
-            <p>{t("startAddingTransactions")}</p>
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>{t("noTransactions")}</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {transactions.map((transaction, index) => (
               <div key={transaction.id}>
-                <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                  <div className="flex items-center space-x-4 flex-1">
+                <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                  <div className="flex items-center space-x-4">
                     <div
                       className={`p-2 rounded-full ${
                         transaction.type === "income" ? "bg-green-100 dark:bg-green-900" : "bg-red-100 dark:bg-red-900"
@@ -114,36 +95,33 @@ export function TransactionList({ transactions, onEdit }: TransactionListProps) 
                         <ArrowDownIcon className="h-4 w-4 text-red-600" />
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge variant={transaction.type === "income" ? "default" : "destructive"} className="text-xs">
+                        <Badge variant={transaction.type === "income" ? "default" : "destructive"}>
                           {t(transaction.type)}
                         </Badge>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                           {formatDate(transaction.created_at)}
                         </span>
                       </div>
-                      <p className="font-medium text-gray-900 dark:text-white truncate" title={transaction.description}>
-                        {transaction.description}
-                      </p>
+                      <p className="font-medium">{transaction.description}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 ml-4">
+                  <div className="flex items-center gap-3">
                     <span
-                      className={`text-lg font-bold whitespace-nowrap ${
+                      className={`text-lg font-bold ${
                         transaction.type === "income" ? "text-green-600" : "text-red-600"
                       }`}
                     >
                       {transaction.type === "income" ? "+" : "-"}
-                      {formatAmount(Number(transaction.amount))} {t("currency")}
+                      {transaction.amount.toFixed(2)} {t("currency")}
                     </span>
                     <div className="flex gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => onEdit(transaction)}
-                        className="text-gray-400 hover:text-blue-600 h-8 w-8"
-                        title="Düzenle"
+                        className="text-gray-400 hover:text-blue-600"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -152,9 +130,8 @@ export function TransactionList({ transactions, onEdit }: TransactionListProps) 
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-gray-400 hover:text-red-600 h-8 w-8"
+                            className="text-gray-400 hover:text-red-600"
                             disabled={isPending}
-                            title="Sil"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -162,17 +139,7 @@ export function TransactionList({ transactions, onEdit }: TransactionListProps) 
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>{t("confirmDelete")}</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              <div className="space-y-2">
-                                <p>{t("deleteConfirmation")}</p>
-                                <div className="p-3 bg-gray-50 rounded border">
-                                  <p className="font-medium">{transaction.description}</p>
-                                  <p className="text-sm text-gray-600">
-                                    {formatAmount(Number(transaction.amount))} ₺ - {t(transaction.type)}
-                                  </p>
-                                </div>
-                              </div>
-                            </AlertDialogDescription>
+                            <AlertDialogDescription>{t("deleteConfirmation")}</AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
